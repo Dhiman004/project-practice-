@@ -1,6 +1,6 @@
 const express = require("express");
-const connectDb = require("./config/dbConnections.js");
-const errorHandler  = require("./middlewares/errorHandler.js");
+const connectDb = require("./config/dbConnection.js");
+const errorHandler  = require("./middleware/errorHandler.js");
 const cors = require("cors");
 
 //env file config
@@ -31,7 +31,10 @@ app.get('/allusers',(req,res)=>{
             {name:"def", age:19}]
     })
 })
+// route for user registration and authentication
+app.use("/api/register", require("./routes/userRoutes"));
 
+app.use(errorHandler)
 app.listen(port,()=>{
     console.log(`server running on port http://localhost:${port}`);
 });
