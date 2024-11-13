@@ -6,7 +6,11 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>hello</h1>
-    {{username}}
+    <div>
+        <form action="/profile" method="post" enctype="multipart/form-data">
+            <input type="file" name="avatar">
+            <button type="submit">Submit</button>
+        </form>
+    </div> 
 </body>
 </html>

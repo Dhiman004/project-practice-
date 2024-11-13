@@ -1,40 +1,88 @@
-const express = require("express");
-const connectDb = require("./config/dbConnection.js");
-const errorHandler  = require("./middleware/errorHandler.js");
-const cors = require("cors");
+const express = require ("express")
+const connectDb = require("./config/dbConnection")
+const errorHandler = require("./middleware/errorHandler")
+const cors = require("cors")
 
-//env file config
-const dotenv = require("dotenv");
-dotenv.config();
+// partials
+const hbs = require("hbs")
+hbs.registerPartials(__dirname + '/views/partials', function(err){}) // path to your directory
 
-connectDb();
+const multer = require("multer")
+const upload = multer({dest: 'uploads/'}) // upload folder
 
-const app = express();
-const port = 5000 || 4000 || 4900 ||1000 || 2999 || 1024 || 8080;
+// env file config
+const dotenv = require("dotenv")
+dotenv.config()
 
-app.use(express.json());
-app.use(cors()); 
-app.get('/',(req,res)=>{
-    res.send("working");
+connectDb()
+const app = express()
+const port = process.env.PORT || 5000
+
+app.use(express.json())
+app.use(cors())
+
+app.use("/api/user", require("./routes/userRoutes"))
+
+
+app.use("/api/doctor", require("./routes/docRoutes"))
+
+// app.post("/api",(req,res)=>{
+//     const {name}=req.body
+//     res.send(name)
+// })
+
+
+app.post("/profile",upload.single('avatar'),function(req,res,next){
+    console.log(req.body)
+
+    console.log(req.file)
+
+    return res.redirect("/home")
+})
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, '/tmp/my-uploads')
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+      cb(null, file.fieldname + '-' + uniqueSuffix)
+    }
+  })
+  
+  const uploads = multer({ storage: storage })
+
+
+app.get("/", (req,res)=>{
+    res.send("Hello World")
+})
+
+app.set('view engine', 'hbs')
+
+
+
+app.get("/home", (req,res) => {
+    res.render("home", {
+        username: "Harshit",
+        hosts: "Whats up brother"
+    })
+})
+
+app.get("/users", (req, res) => {
+    const users = [
+        { username: "Harshit", hosts: "What's up brother" },
+        { username: "Alice", hosts: "Hello Alice!" },
+        { username: "Bob", hosts: "Hey Bob!" }
+    ];
+
+    res.render("users", { users });
 });
 
-app.get('/home',(req,res)=>{
-    res.render('home',{
-        username: "xyz",
-        posts: "flana dhimkana"
-    })
-})
 
-app.get('/allusers',(req,res)=>{
-    res.render('allusers',{
-        data:[{name:"abc", age:20},
-            {name:"def", age:19}]
-    })
-})
-// route for user registration and authentication
-app.use("/api/register", require("./routes/userRoutes"));
+
 
 app.use(errorHandler)
-app.listen(port,()=>{
-    console.log(`server running on port http://localhost:${port}`);
-});
+
+app.listen(port, ()=>{
+    console.log(`Server is running on port ${port}`)
+})
