@@ -1,37 +1,45 @@
-var jwt=require('jsonwebtoken');
+var jwt = require('jsonwebtoken');
 
-const geerateToken=(userData)=>{
-    //int his function we are creating new/fresh JWT token to provide user, for login/session management or for authorization purpose.
+const generateToken=(userData)=>{
+    // int this function we are creating new fresh jwt token to provide user , for LOgin/Session management or for authourise purpose
     return jwt.sign(userData,process.env.PRIVATE_KEY)
 }
 
 const validateJwtToken = (req,res,next)=>{
-    //first we are checking that JWT token is avaialable or not.
-    const authorization= req.headers.authorization;
+    //first  we are checking that JWT toekn is available or not 
+    const authourization = req.header.authourization;
+    //output : 1. Bearer qwertyuio
+    //output : 2. qwertyuio
+    //output : 3. (empty string)
+    //output : 4. TOKEN BANA HI NAHI H LOCAL ho ya ENDPOINT TESTING SE BHEJA HO < WITHOUT TOKEN HEADDER SEND KARA H
 
-    //output 1 : bearer sndvkjdlvnfd 
-    //output 2 : sndvkjdlvnfd 
-    //output 3 : ' '
-    //output 4 : token bnaa hi nhi h,local ho ya endpoint se bheja ho mtln without token header send kra h 
-    if(!authorization){
-        return res.status(401).json({err:'Token not available'})
-    }  
-    //we are storing the token 
-    const token = req.headers.authorization.split(' ')[1]
-    // token provided is wrong,throw error message unauhtorised user
-    if(!token){
-        return res.status(401).json({err:'unauthorization User'});
+    if(!authourization){
+        return res.status(401).json
+        ({err:'Token not available'})
     }
 
+
+    //we are storing the token value 
+    const token = req.header.authourization.split(' ')[1]
+
+    //token provided is wrong 
+    if(!token){
+        return res.status(401).json
+        ({err:'Unauthorized User'});
+    }
+
+
     try{
-        //in this error handler try catch: we are handling, if token i s validate or verified, then move to next middleware or respond back to client.
-        const validateToken= jwt.verify(token,process.env.PRIVATE_KEY);
+        //int this error  handling try catch : we are handling , if token is validated or verified , then move to next middleware or respond back to client
+        const validateToken = jwt.verify(token,process.env.PRIVATE_KEY);
+        
         req.user=validateToken;
         next();
     }
     catch(err){
-        console.log("ERROR OCURRED : ",err.message);
+        console.error("ERROR OCCURED : " , err.message);
     }
+
 }
 
-module.exports= {geerateToken,validateJwtToken}
+module.exports = {generateToken,validateJwtToken}

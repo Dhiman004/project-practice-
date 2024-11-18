@@ -3,15 +3,20 @@ const router = express.Router()
 
 const {
     userRegister,
-    userLogin
+    userLogin,
+    userProfile
 } = require("../controllers/userController")
+
+const {
+    generateToken,
+    validateJwtToken
+} = require("../middleware/jwtMiddleWaare")
 
 router.post("/register", userRegister)
 
 router.post("/login", userLogin)
 
-router.get("/getProfile",validateJwtToken, userProfile)
-
 // router.post("/login", loginUser)
+router.get("/getProfile", validateJwtToken, userProfile)
 
 module.exports = router

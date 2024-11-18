@@ -1,88 +1,112 @@
-const express = require ("express")
-const connectDb = require("./config/dbConnection")
-const errorHandler = require("./middleware/errorHandler")
-const cors = require("cors")
-
-// partials
-const hbs = require("hbs")
-hbs.registerPartials(__dirname + '/views/partials', function(err){}) // path to your directory
-
-const multer = require("multer")
-const upload = multer({dest: 'uploads/'}) // upload folder
-
-// env file config
-const dotenv = require("dotenv")
-dotenv.config()
-
-connectDb()
-const app = express()
-const port = process.env.PORT || 5000
-
-app.use(express.json())
-app.use(cors())
-
-app.use("/api/user", require("./routes/userRoutes"))
+const express = require("express");
+const connectDb = require("./config/dbConnection.js");
+const errorHandler  = require("./middleware/errorHandler.js");
+const cors = require("cors");
+const multer = require("multer");
+const hbs = require("hbs");
+// const upload = multer({ dest: 'uploads/' })
 
 
-app.use("/api/doctor", require("./routes/docRoutes"))
+//env file config
+const dotenv = require("dotenv");
 
-// app.post("/api",(req,res)=>{
-//     const {name}=req.body
-//     res.send(name)
-// })
+dotenv.config();
 
-
-app.post("/profile",upload.single('avatar'),function(req,res,next){
-    console.log(req.body)
-
-    console.log(req.file)
-
-    return res.redirect("/home")
-})
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, '/tmp/my-uploads')
-    },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname + '-' + uniqueSuffix)
-    }
-  })
-  
-  const uploads = multer({ storage: storage })
-
-
-app.get("/", (req,res)=>{
-    res.send("Hello World")
-})
-
-app.set('view engine', 'hbs')
+connectDb();
 
 
 
-app.get("/home", (req,res) => {
-    res.render("home", {
-        username: "Harshit",
-        hosts: "Whats up brother"
+const app = express();
+app.set('view engine','hbs');
+const port = 5000 || 4000 || 4900 ||1000 || 2999 || 1024 || 8080;
+
+app.use(express.json());
+app.use(cors()); 
+app.get('/',(req,res)=>{
+    res.send("working");
+});
+
+app.get('/home',(req,res)=>{
+    res.render('home',{
+        username: "xyz",
+        posts: "flana dhimkana"
     })
 })
 
-app.get("/users", (req, res) => {
-    const users = [
-        { username: "Harshit", hosts: "What's up brother" },
-        { username: "Alice", hosts: "Hello Alice!" },
-        { username: "Bob", hosts: "Hey Bob!" }
-    ];
-
-    res.render("users", { users });
-});
-
-
-
-
-app.use(errorHandler)
-
-app.listen(port, ()=>{
-    console.log(`Server is running on port ${port}`)
+app.get('/allusers',(req,res)=>{
+    res.render('allusers',{
+        data:[{name:"abc", age:20},
+            {name:"def", age:19}]
+    })
 })
+app.use("/api/register" , require("./routes/userRoutes"));
+app.use("/api/doctorRegister" , require("./routes/doctorRoutes.js"));
+
+//code for multer
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads")
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, file.fieldname + '-' + uniqueSuffix)
+  }
+  })
+
+  const upload = multer({ storage: storage })
+
+
+  app.get("/home", async (req, res) => {
+      // Fetch all uploaded files from MongoDB
+      const files = await File.find();
+      res.render("home", {
+          username: "Himanshu   ",
+          users: [{ name: "John Doe", age: 30 }, { name: "Jane Smith", age: 25 }],
+          files: files // Pass files to the template
+      });
+  });
+  
+  // Route to handle file upload and save metadata in MongoDB
+  app.post('/profile', upload.single('avatar'), async (req, res) => {
+      try {
+          // Create a new file record in MongoDB
+          const fileData = new File({
+              originalName: req.file.originalname,
+              filename: req.file.filename,
+              path: req.file.path,
+              size: req.file.size,
+          });
+  
+          await fileData.save(); // Save metadata to MongoDB
+          console.log("File metadata saved:", fileData);
+  
+          return res.redirect("/home");
+      } catch (error) {
+          console.error("Error uploading file:", error);
+          res.status(500).send("Error uploading file.");
+      }
+  });
+
+//using multer 
+app.post('/profile', upload.single('avatar'), function (req, res, next) {
+  // req.file is the avatar file
+  // req.body will hold the text fields, if there were any
+  console.log(req.body);
+  console.log(req.file);
+  return res.redirect("/home");
+  })
+
+  app.get("/profile",async(req,res)=>{
+    
+    let allblog=await Profie.find();
+    console.log("chalgya oyee");
+    
+    res.render("profile",{profile : allblog});
+}) 
+
+//router for newsletter
+
+app.listen(port,()=>{
+    console.log(`server running on port http://localhost:${port}`);
+});
